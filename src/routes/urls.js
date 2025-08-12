@@ -1,9 +1,14 @@
 const express = require('express');
-const { nanoid } = require('nanoid');
+const crypto = require('crypto');
 const database = require('../db');
 const { isValidUrl } = require('../utils/validation');
 
 const router = express.Router();
+
+function generateId(idLength = 7) {
+  const bytesNeeded = Math.ceil((idLength * 3) / 4);
+  return crypto.randomBytes(bytesNeeded).toString('base64url').slice(0, idLength);
+}
 
 router.post('/api/shorten', (req, res) => {
   const { url } = req.body || {};
@@ -11,7 +16,7 @@ router.post('/api/shorten', (req, res) => {
     return res.status(400).json({ error: 'Invalid URL. Include http(s):// protocol.' });
   }
 
-  const id = nanoid(7);
+  const id = generateId(7);
   database.run(
     'INSERT INTO urls (id, original_url) VALUES (?, ?)',
     [id, url],
