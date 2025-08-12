@@ -17,5 +17,15 @@ describe('URL shortener', () => {
     expect(response.body).toHaveProperty('id');
     expect(response.body).toHaveProperty('shortUrl');
   });
+
+  it('redirects from short id to original URL', async () => {
+    const create = await request(app)
+      .post('/api/shorten')
+      .send({ url: 'https://example.com/abc' });
+    const { id } = create.body;
+    const res = await request(app).get(`/${id}`).redirects(0);
+    expect(res.status).toBe(302);
+    expect(res.headers.location).toBe('https://example.com/abc');
+  });
 });
 
